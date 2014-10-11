@@ -1,0 +1,1 @@
+modulex.config("requires",{"combobox/multi-word":["combobox","util","node"]});

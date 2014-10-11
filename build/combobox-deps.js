@@ -1,0 +1,1 @@
+modulex.config("requires",{"combobox":["util","node","component/control","menu","xtemplate/runtime","attribute","io"]});
