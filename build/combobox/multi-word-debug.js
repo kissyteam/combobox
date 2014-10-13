@@ -1,6 +1,4 @@
-modulex.add("combobox/multi-word", ["util","node","combobox"], function(require, exports, module) {
-var _util_ = require("util");
-var node = require("node");
+modulex.add("combobox/multi-word", ["combobox"], function(require, exports, module) {
 var combobox = require("combobox");
 /*
 combined modules:
@@ -14,105 +12,84 @@ comboboxMultiWordCursor = function (exports) {
    * get cursor position of input
    * @author yiminghe@gmail.com
    */
-  var util = _util_;
-  var $ = node, FAKE_DIV_HTML = '<div style="' + 'z-index:-9999;' + 'overflow:hidden;' + 'position: fixed;' + 'left:-9999px;' + 'top:-9999px;' + 'opacity:0;' + // firefox default normal,need to force to use pre-wrap
-    'white-space:pre-wrap;' + 'word-wrap:break-word;' + '"></div>', FAKE_DIV, MARKER = '<span>' + // must has content
-    // or else <br/><span></span> can not get right coordinates
-    'x' + '</span>', STYLES = [
-      'paddingLeft',
-      'paddingTop',
-      'paddingBottom',
-      'paddingRight',
-      'marginLeft',
-      'marginTop',
-      'marginBottom',
-      'marginRight',
-      'borderLeftStyle',
-      'borderTopStyle',
-      'borderBottomStyle',
-      'borderRightStyle',
-      'borderLeftWidth',
-      'borderTopWidth',
-      'borderBottomWidth',
-      'borderRightWidth',
-      'line-height',
-      'outline',
+  // from mentio
+  function getTextAreaOrInputUnderlinePosition(element, position) {
+    var properties = [
+      'direction',
+      'boxSizing',
+      'width',
       'height',
-      'fontFamily',
-      'fontSize',
-      'fontWeight',
+      'overflowX',
+      'overflowY',
+      'borderTopWidth',
+      'borderRightWidth',
+      'borderBottomWidth',
+      'borderLeftWidth',
+      'paddingTop',
+      'paddingRight',
+      'paddingBottom',
+      'paddingLeft',
+      'fontStyle',
       'fontVariant',
-      'fontStyle'
-    ], supportInputScrollLeft, findSupportInputScrollLeft;
-  function getFakeDiv(elem) {
-    var fake = FAKE_DIV;
-    if (!fake) {
-      fake = $(FAKE_DIV_HTML);
+      'fontWeight',
+      'fontStretch',
+      'fontSize',
+      'fontSizeAdjust',
+      'lineHeight',
+      'fontFamily',
+      'textAlign',
+      'textTransform',
+      'textIndent',
+      'textDecoration',
+      'letterSpacing',
+      'wordSpacing'
+    ];
+    var isFirefox = window.mozInnerScreenX !== null;
+    var div = document.createElement('div');
+    div.id = 'input-textarea-caret-position-mirror-div';
+    document.body.appendChild(div);
+    var style = div.style;
+    var computed = window.getComputedStyle ? getComputedStyle(element) : element.currentStyle;
+    style.whiteSpace = 'pre-wrap';
+    if (element.nodeName !== 'INPUT') {
+      style.wordWrap = 'break-word';
     }
-    if (String(elem[0].type.toLowerCase()) === 'textarea') {
-      fake.css('width', elem.css('width'));
+    // position off-screen
+    style.position = 'absolute';
+    style.visibility = 'hidden';
+    // transfer the element's properties to the div
+    for (var i = 0; i < properties.length; i++) {
+      var prop = properties[i];
+      style[prop] = computed[prop];
+    }
+    if (isFirefox) {
+      style.width = parseInt(computed.width) - 2 + 'px';
+      if (element.scrollHeight > parseInt(computed.height)) {
+        style.overflowY = 'scroll';
+      }
     } else {
-      // input does not wrap at all
-      fake.css('width', 9999);
+      style.overflow = 'hidden';
     }
-    util.each(STYLES, function (s) {
-      fake.css(s, elem.css(s));
-    });
-    if (!FAKE_DIV) {
-      fake.insertBefore(elem[0].ownerDocument.body.firstChild);
+    div.textContent = element.value.substring(0, position);
+    if (element.nodeName === 'INPUT') {
+      div.textContent = div.textContent.replace(/\s/g, '\xA0');
     }
-    FAKE_DIV = fake;
-    return fake;
-  }
-  findSupportInputScrollLeft = function () {
-    var doc = document, input = $('<input>');
-    input.css({
-      width: 1,
-      position: 'absolute',
-      left: -9999,
-      top: -9999
-    });
-    input.val('123456789');
-    input.appendTo(doc.body);
-    input[0].focus();
-    supportInputScrollLeft = input[0].scrollLeft > 0;
-    input.remove();
-    findSupportInputScrollLeft = function () {
+    var span = document.createElement('span');
+    span.textContent = element.value.substring(position) || '.';
+    div.appendChild(span);
+    var coordinates = {
+      top: span.offsetTop + parseInt(computed.borderTopWidth) + span.offsetHeight,
+      left: span.offsetLeft + parseInt(computed.borderLeftWidth)
     };
-  };
-  // firefox not support, chrome support
-  supportInputScrollLeft = false;
-  exports = function (elem) {
-    var $elem = $(elem);
-    elem = $elem[0];
-    var doc = elem.ownerDocument, $doc = $(doc), elemOffset, range, fake, selectionStart, offset, marker, elemScrollTop = elem.scrollTop, elemScrollLeft = elem.scrollLeft;
-    if (doc.selection) {
-      range = doc.selection.createRange();
-      return {
-        left: range.boundingLeft + elemScrollLeft + $doc.scrollLeft(),
-        top: range.boundingTop + elemScrollTop + range.boundingHeight + $doc.scrollTop()
-      };
-    }
-    elemOffset = $elem.offset();
-    if (!supportInputScrollLeft && elem.type !== 'textarea') {
-      elemOffset.top += elem.offsetHeight;
-      return elemOffset;
-    }
-    fake = getFakeDiv($elem);
-    selectionStart = elem.selectionStart;
-    fake.html(util.escapeHtml(elem.value.substring(0, selectionStart - 1)) + MARKER);
-    offset = elemOffset;
-    fake.offset(offset);
-    marker = fake.last();
-    offset = marker.offset();
-    offset.top += marker.height();
-    if (selectionStart > 0) {
-      offset.left += marker.width();
-    }
-    offset.top -= elemScrollTop;
-    offset.left -= elemScrollLeft;
-    return offset;
-  };
+    var obj = element;
+    do {
+      coordinates.left += obj.offsetLeft;
+      coordinates.top += obj.offsetTop;
+    } while (obj = obj.offsetParent);
+    document.body.removeChild(div);
+    return coordinates;
+  }
+  exports = getTextAreaOrInputUnderlinePosition;
   return exports;
 }();
 comboboxMultiWord = function (exports) {
@@ -137,7 +114,9 @@ comboboxMultiWord = function (exports) {
       }
     },
     getCurrentValue: function () {
-      var self = this, inputDesc = getInputDesc(self), tokens = inputDesc.tokens, tokenIndex = inputDesc.tokenIndex, separator = self.get('separator'), separatorType = self.get('separatorType'), token = tokens[tokenIndex], l = token.length - 1;
+      var self = this;
+      var inputDesc = getInputDesc(self);
+      var tokens = inputDesc.tokens, tokenIndex = inputDesc.tokenIndex, separator = self.get('separator'), separatorType = self.get('separatorType'), token = tokens[tokenIndex], l = token.length - 1;
       if (separatorType !== SUFFIX) {
         if (strContainsChar(separator, token.charAt(0))) {
           token = token.slice(1);
@@ -172,13 +151,16 @@ comboboxMultiWord = function (exports) {
     },
     alignWithCursor: function () {
       var self = this;
-      var menu = self.get('menu'), cursorOffset, input = self.get('input');
-      cursorOffset = getCursor(input);
+      var menu = self.get('menu');
+      var input = self.get('input');
+      var inputDesc = getInputDesc(self);
+      var cursorOffset = getCursor(input[0], inputDesc.tokens.slice(0, inputDesc.tokenIndex).join('').length + 1);
       menu.move(cursorOffset.left, cursorOffset.top);
     }
   }, {
     ATTRS: {
       separator: { value: ',;' },
+      updateInputOnDownUp: { value: false },
       separatorType: { value: SUFFIX },
       literal: { value: '"' },
       alignWithCursor: {}

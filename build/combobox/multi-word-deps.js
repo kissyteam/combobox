@@ -1,1 +1,1 @@
-modulex.config("requires",{"combobox/multi-word":["combobox","util","node"]});
+modulex.config("requires",{"combobox/multi-word":["combobox"]});

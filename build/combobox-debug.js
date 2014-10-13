@@ -703,15 +703,14 @@ comboboxControl = function (exports) {
     }
   }
   function onValueChange(e) {
-    this.setCurrentValue(e.target.value, { data: { causedByInputEvent: 1 } });
+    this.set('value', e.target.value, { data: { causedByInputEvent: 1 } });
   }
   function renderData(data) {
-    var self = this, start, children = [], val, matchVal, i, menu = self.get('menu');
+    var self = this, children = [], val, matchVal, i, menu = self.get('menu');
     data = self.normalizeData(data);
     menu.set('highlightedItem', null);
     menu.removeChildren(true);
     if (data && data.length) {
-      start = util.now();
       menu.addChildren(data);
       children = menu.get('children');
       val = self.getCurrentValue();
@@ -719,6 +718,7 @@ comboboxControl = function (exports) {
         for (i = 0; i < children.length; i++) {
           if (children[i].get('textContent') === val) {
             children[i].set('highlighted', true);
+            menu.set('highlightedItem', children[i]);
             matchVal = true;
             break;
           }
@@ -728,6 +728,7 @@ comboboxControl = function (exports) {
         for (i = 0; i < children.length; i++) {
           if (!children[i].get('disabled')) {
             children[i].set('highlighted', true);
+            menu.set('highlightedItem', children[i]);
             break;
           }
         }
