@@ -14,15 +14,15 @@
         "!index.js"
     ],
     "dependencies": {
-        "modulex": "modulex#master",
-        "modulex-feature": "modulex-feature#master",
-        "modulex-ua": "modulex-ua#master",
-        "modulex-io": "modulex-io#master",
-        "modulex-menu": "modulex-menu#master",
-        "modulex-component": "modulex-component#master"
+        "modulex": "*",
+        "modulex-feature": "modulex-feature#1.x",
+        "modulex-ua": "modulex-ua#1.x",
+        "modulex-io": "modulex-io#1.x",
+        "modulex-menu": "modulex-menu#1.x",
+        "modulex-component": "modulex-component#1.x"
     },
     "devDependencies": {
-        "modulex-button": "modulex-button#master",
-        "modulex-css": "modulex-css#master"
+        "modulex-button": "modulex-button#1.x",
+        "modulex-css": "modulex-css#1.x"
     }
 }

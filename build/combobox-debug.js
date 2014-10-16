@@ -1,3 +1,8 @@
+/*
+Copyright 2014, modulex-combobox@1.0.1
+MIT Licensed
+build time: Thu, 16 Oct 2014 07:42:37 GMT
+*/
 modulex.add("combobox", ["attribute","util","io","xtemplate/runtime","node","component/control","menu"], function(require, exports, module) {
 var attribute = require("attribute");
 var _util_ = require("util");
@@ -740,7 +745,7 @@ comboboxControl = function (exports) {
     }
   }
   exports = ComboBox;
-  ComboBox.version = '1.0.0';
+  ComboBox.version = '1.0.1';
   return exports;
 }();
 combobox = function (exports) {
@@ -750,6 +755,7 @@ combobox = function (exports) {
   ComboBox.LocalDataSource = LocalDataSource;
   ComboBox.RemoteDataSource = RemoteDataSource;
   exports = ComboBox;
+  ComboBox.version = '1.0.1';
   return exports;
 }();
 module.exports = combobox;
